@@ -1,4 +1,4 @@
-import prisma from "../../../../../prisma";
+import prisma from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 export default async function handler(req, res) {
