@@ -1,5 +1,6 @@
 "use client";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function LoginPage() {
@@ -34,6 +35,12 @@ export default function LoginPage() {
         >
           Login
         </button>
+        <p className="text-center text-gray-600 mt-4">
+          Don't have an account?{" "}
+          <Link href="/signup" className="text-purple-600 hover:underline">
+            SignUp
+          </Link>
+        </p>
       </div>
     </div>
   );
