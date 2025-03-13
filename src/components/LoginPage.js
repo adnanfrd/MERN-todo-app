@@ -10,7 +10,6 @@ export default function LoginPage() {
   const handleLogin = async () => {
     await signIn("credentials", { email, password, redirect: true, callbackUrl: "/tasks" });
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 to-pink-500 px-4">
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg">
