@@ -1,38 +1,87 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
 export default function UserList() {
-  const [users, setUsers] = useState([
-    { id: 1, name: "John Doe", email: "john@example.com", country: "USA" },
-    { id: 2, name: "Alice Smith", email: "alice@example.com", country: "Canada" },
-    { id: 3, name: "David Johnson", email: "david@example.com", country: "UK" },
-    { id: 4, name: "Sophia Lee", email: "sophia@example.com", country: "Australia" },
-    { id: 5, name: "Michael Brown", email: "michael@example.com", country: "Germany" },
-  ]);
-
+  const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newUser, setNewUser] = useState({ name: "", email: "", country: "" });
   const [editUser, setEditUser] = useState(null);
 
-  const handleAddUser = () => {
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/tasks");
+      const data = await response.json();
+      setUsers(data.tasks);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleAddUser = async () => {
     if (!newUser.name || !newUser.email || !newUser.country) return;
-    setUsers([...users, { id: Date.now(), ...newUser }]);
-    setNewUser({ name: "", email: "", country: "" });
-    setIsModalOpen(false);
+
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+
+      if (response.ok) {
+        fetchUsers();
+        setNewUser({ name: "", email: "", country: "" });
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }
   };
 
-  const handleEditUser = () => {
+  const handleEditUser = async () => {
     if (!editUser.name || !editUser.email || !editUser.country) return;
-    setUsers(users.map((user) => (user.id === editUser.id ? editUser : user)));
-    setEditUser(null);
-    setIsModalOpen(false);
+
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editUser),
+      });
+
+      if (response.ok) {
+        fetchUsers();
+        setEditUser(null);
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
   };
 
-  const handleDeleteUser = (id) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-    setUsers(users.filter((user) => user.id !== id));
-  };
+ const handleDeleteUser = async (id) => {
+  if (!confirm("Are you sure you want to delete this user?")) return;
+
+  try {
+    const response = await fetch(`/api/tasks`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    if (response.ok) {
+      fetchUsers(); // Refresh UI after deletion
+    } else {
+      console.error("Failed to delete user");
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 backdrop-blur-md">
@@ -98,7 +147,7 @@ export default function UserList() {
                     ? setEditUser({ ...editUser, name: e.target.value })
                     : setNewUser({ ...newUser, name: e.target.value })
                 }
-                className="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 mb-3 border border-gray-300 rounded-lg"
               />
               <input
                 type="email"
@@ -109,7 +158,7 @@ export default function UserList() {
                     ? setEditUser({ ...editUser, email: e.target.value })
                     : setNewUser({ ...newUser, email: e.target.value })
                 }
-                className="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 mb-3 border border-gray-300 rounded-lg"
               />
               <input
                 type="text"
@@ -120,7 +169,7 @@ export default function UserList() {
                     ? setEditUser({ ...editUser, country: e.target.value })
                     : setNewUser({ ...newUser, country: e.target.value })
                 }
-                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -129,13 +178,13 @@ export default function UserList() {
                     setEditUser(null);
                     setNewUser({ name: "", email: "", country: "" });
                   }}
-                  className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                  className="px-4 py-2 bg-gray-400 text-white rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={editUser ? handleEditUser : handleAddUser}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg"
                 >
                   {editUser ? "Update" : "Add"}
                 </button>
