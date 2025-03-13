@@ -1,15 +1,36 @@
 "use client";
-import { signIn } from "next-auth/react";
-import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();  
 
   const handleLogin = async () => {
-    await signIn("credentials", { email, password, redirect: true, callbackUrl: "/tasks" });
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        alert("Login Successfull !")
+        setTimeout(() => {
+          router.push("/tasks");
+        }, 2000);
+      } else {
+        const data = await response.json();
+        alert(data.error || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("An error occurred during login");
+    }
   };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 to-pink-500 px-4">
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg">
